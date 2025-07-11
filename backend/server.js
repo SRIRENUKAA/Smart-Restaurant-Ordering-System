@@ -3,6 +3,8 @@ const http = require("http");
 const { Server } = require("socket.io");
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 const cors = require('cors');
 const User = require('./models/User');
 const MenuItem = require('./models/MenuItem');
@@ -23,11 +25,14 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' })); // increase size limit to 10mb
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+require('dotenv').config();
+
 // Connect MongoDB (change URL)
-mongoose.connect('mongodb+srv://srirenu2004:smartrestaurant@cluster0.jiflp5d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
+mongoose.connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
+
 .then(() => console.log("MongoDB connected"))
     .catch(err => console.error("MongoDB connection error:", err));
 
@@ -49,6 +54,10 @@ io.on("connection", (socket) => {
         console.log("❌ User disconnected:", socket.id);
     });
 });    
+
+app.get("/", (req, res) => {
+    res.send("✅ Backend server is running successfully!");
+});
 
 // POST /api/notifications
 app.post("/api/notifications", async (req, res) => {
@@ -210,6 +219,26 @@ app.put('/api/menu/:userId', async (req, res) => {
         res.status(500).json({ error: 'Failed to update menu' });
     }
 });
+
+// 📊 GET: Top 5 Selling Items
+app.get('/top-items/:restaurant', async (req, res) => {
+    const restaurant = req.params.restaurant;
+
+    const topItems = await Order.aggregate([
+        { $match: { restaurant } },
+        { $unwind: "$items" },
+        {
+            $group: {
+                _id: "$items.name",
+                totalOrdered: { $sum: "$items.quantity" }
+            }
+        },
+        { $sort: { totalOrdered: -1 } },
+        { $limit: 5 }
+    ]);
+
+    res.json(topItems);
+});  
 
 app.post('/api/qrcode/save', async (req, res) => {
     try {
@@ -560,6 +589,55 @@ app.post('/api/login', async (req, res) => {
     } catch (err) {
         console.error("Server error:", err);
         res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// POST: forgot password
+// POST: forgot password
+app.post('/api/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) return res.status(400).json({ message: 'Email not found' });
+
+    const token = jwt.sign({ id: user._id }, "mySecretKey", { expiresIn: '10m' });
+    const resetLink = `http://localhost:3000/reset-password/${token}`;
+
+    let transporter = nodemailer.createTransport({
+        service: 'Gmail',
+        auth: {
+            user: 'srirenu2004@gmail.com',
+            pass: 'qjfn wygz gltw ujcp'
+        },
+        tls: {
+            rejectUnauthorized: false  // ✅ fixes self-signed cert error
+        }
+    });
+
+    await transporter.sendMail({
+        to: email,
+        subject: "Password Reset",
+        html: `<p>Click <a href="${resetLink}">here</a> to reset password. This link expires in 10 minutes.</p>`
+    });
+
+    res.json({ message: 'Reset link sent to your email' });
+});
+
+// POST: reset password
+app.post('/api/reset-password', async (req, res) => {
+    const { token, newPassword } = req.body;
+    try {
+        const decoded = jwt.verify(token, "mySecretKey");
+        const user = await User.findById(decoded.id);
+        if (!user) return res.status(400).json({ message: 'Invalid token' });
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+
+        res.json({ message: 'Password reset successful' });
+    } catch (err) {
+        res.status(400).json({ message: 'Invalid or expired token' });
     }
 });
 
