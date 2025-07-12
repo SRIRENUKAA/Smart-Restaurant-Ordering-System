@@ -1,4 +1,6 @@
-// src/socket.js
 import { io } from "socket.io-client";
-const socket = io("http://localhost:5000"); // your backend URL
+
+const BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:5000"; // fallback for dev
+const socket = io(BASE_URL);
+
 export default socket;
