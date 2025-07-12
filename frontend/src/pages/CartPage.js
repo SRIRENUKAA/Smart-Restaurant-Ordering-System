@@ -137,7 +137,7 @@ function CartPage() {
             }
         }
 
-        if (paymentMethod === 'In Cash') {
+        if (paymentMethod === 'Cash on Delivery') {
             saveOrder('Cash on Delivery');
         }
     };        
