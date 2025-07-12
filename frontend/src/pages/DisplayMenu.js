@@ -72,29 +72,6 @@ function DisplayMenu() {
             });
     }, [menuID, qrName, BASE_URL]);
 
-    useEffect(() => {
-        if (!qrName || !menuID || !restaurantName) return;
-
-        fetch(`${BASE_URL}/api/notifications/send-to-staff`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                qrName,
-                restaurant: restaurantName
-            })
-        })
-            .then(res => res.json())
-            .then(data => {
-                console.log("✅ Staff Notified:", data.message);
-            })
-            .catch(err => {
-                console.error("❌ Notification send failed:", err);
-            });
-
-    }, [qrName, menuID, restaurantName, BASE_URL]);    
-
     const [cart, setCart] = useState(() => {
         try {
             const stored = localStorage.getItem(cartKey);
