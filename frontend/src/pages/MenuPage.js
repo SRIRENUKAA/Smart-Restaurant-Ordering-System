@@ -519,10 +519,6 @@ const styles = {
         scrollSnapType: 'x mandatory',
         scrollbarWidth: 'none', // Firefox
         msOverflowStyle: 'none', // IE 10+
-        // For hiding scrollbar in WebKit browsers:
-        '&::-webkit-scrollbar': {
-            display: 'none',
-        },
     },
 
     card: {
