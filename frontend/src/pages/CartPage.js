@@ -95,13 +95,14 @@ function CartPage() {
         setOrderPlaced(true);
 
         // ✅ Send notification to staff
+        const formattedQR = qrName.charAt(0).toUpperCase() + qrName.slice(1); // "table 2" → "Table 2"
+
         fetch(`${BASE_URL}/api/notifications/send-to-staff`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                qrName: qrName,
-                restaurant: adminSettings?.restaurant,
-                message: `New Order from QR "${qrName}" at ${adminSettings?.restaurant}`
+                qrName: formattedQR,
+                restaurant: adminSettings?.restaurant
             }),
         });
 
@@ -138,7 +139,7 @@ function CartPage() {
         }
 
         if (paymentMethod === 'Cash on Delivery') {
-            saveOrder('Cash on Delivery');
+            saveOrder('In Cash');
         }
     };        
 

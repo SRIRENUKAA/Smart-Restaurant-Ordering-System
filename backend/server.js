@@ -420,7 +420,7 @@ app.post("/api/notifications/send-to-staff", async (req, res) => {
         // ✅ Find the staff whose assignedTables includes this qrName and hotelName matches
         const staff = await Staff.findOne({
             hotelName: restaurant,
-            assignedTables: qrName
+            assignedTables: { $elemMatch: { $regex: `^${qrName}$`, $options: 'i' } }  // case-insensitive
         });
 
         if (!staff) {
