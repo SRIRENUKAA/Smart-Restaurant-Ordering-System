@@ -174,7 +174,7 @@ function CartPage() {
 
             {orderPlaced ? (
                 <div style={{ textAlign: 'center', color: 'green', fontSize: '18px' }}>
-                    ✅ Order placed with <strong>{paymentMethod}</strong>!
+                    ✅ Order placed with <strong>{paymentMethod === 'Cash on Delivery' ? 'In Cash' : paymentMethod}</strong>!
                 </div>
             ) : (
                 <>
