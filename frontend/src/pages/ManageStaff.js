@@ -23,19 +23,21 @@ const ManageStaff = () => {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    // ✅ Load QR Names (Unique)
+    // ✅ Load QR Names from DB
     useEffect(() => {
-        const saved = JSON.parse(localStorage.getItem('savedQRCodes')) || [];
-        const nameSet = new Set();
-        const uniqueNames = [];
-        saved.forEach(qr => {
-            if (!nameSet.has(qr.name)) {
-                nameSet.add(qr.name);
-                uniqueNames.push(qr.name);
+        const fetchQRCodes = async () => {
+            try {
+                const res = await axios.get(`${BASE_URL}/api/qrcodes/${userId}`);
+                const qrNamesOnly = res.data.map(qr => qr.qrName);
+                setQrNames(qrNamesOnly);
+            } catch (err) {
+                console.error("Error fetching QR codes:", err);
+                alert("Failed to load QR code names");
             }
-        });
-        setQrNames(uniqueNames);
-    }, []);
+        };
+
+        fetchQRCodes();
+    }, [userId, BASE_URL]);
 
     // ✅ Load staff from backend
     useEffect(() => {

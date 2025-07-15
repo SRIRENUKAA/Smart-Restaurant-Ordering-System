@@ -260,17 +260,26 @@ app.post('/api/qrcode/save', async (req, res) => {
 });
 
 // Optional: create GET route to fetch QR by user
-app.get('/api/qrcode/:userId', async (req, res) => {
+app.get('/api/qrcodes/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        const qrCode = await QRCodeModel.findOne({ userId });
-        if (!qrCode) {
-            return res.status(404).json({ error: 'QR code not found' });
-        }
-        res.json(qrCode);
+
+        // Fetch all qrcodes and get only unique qrName
+        const qrCodes = await QRCodeModel.find({ userId });
+
+        const nameMap = new Map();
+        qrCodes.forEach(qr => {
+            if (!nameMap.has(qr.qrName)) {
+                nameMap.set(qr.qrName, qr);
+            }
+        });
+
+        const uniqueQrCodes = Array.from(nameMap.values());
+        res.json(uniqueQrCodes);
+
     } catch (error) {
-        console.error('Error fetching QR:', error);
-        res.status(500).json({ error: 'Failed to fetch QR code' });
+        console.error('Error fetching QR codes:', error);
+        res.status(500).json({ error: 'Failed to fetch QR codes' });
     }
 });
 

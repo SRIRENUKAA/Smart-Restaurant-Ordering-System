@@ -5,11 +5,13 @@ function Logout() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const activeUser = localStorage.getItem('activeUser');
+        // ✅ Clear all relevant login data
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('activeUser');
 
-        if (activeUser) {
-            localStorage.removeItem(`userId_${activeUser}`);
-        }
+        // ✅ Optionally clear any other user-specific data
+        // localStorage.clear(); // ← use this if you want to clear everything
 
         navigate('/login');
     }, [navigate]);

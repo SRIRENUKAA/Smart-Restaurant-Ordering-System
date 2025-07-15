@@ -1,6 +1,7 @@
 // src/pages/CartPage.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import socket from '../socket';
 
 function CartPage() {
     const location = useLocation();
@@ -37,6 +38,10 @@ function CartPage() {
                 .then((data) => {
                     console.log("🔍 Admin Settings Fetched:", data); // 👈 this will show you what's actually coming from DB
                     setAdminSettings(data);
+                    if (data?.userId) {
+                        console.log("📡 Joining socket room for userId:", data.userId);
+                        socket.emit("join", data.userId);
+                    }
                 })                
                 .catch((err) => {
                     console.error("❌ Admin settings not loaded", err);
@@ -44,6 +49,17 @@ function CartPage() {
                 });
         }
     }, [menuID, BASE_URL]);
+
+    useEffect(() => {
+        socket.on("receiveNotification", (message) => {
+            console.log("📥 Notification Received:", message);
+            alert(`🔔 ${message}`);
+        });
+
+        return () => {
+            socket.off("receiveNotification");
+        };
+    }, []);
 
     const removeFromCart = (index) => {
         const updated = [...cart];
@@ -97,6 +113,8 @@ function CartPage() {
         // ✅ Send notification to staff
         const formattedQR = qrName.charAt(0).toUpperCase() + qrName.slice(1); // "table 2" → "Table 2"
 
+        console.log("📦 Sending notification to staff for:", formattedQR, adminSettings?.restaurant);
+
         fetch(`${BASE_URL}/api/notifications/send-to-staff`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -104,7 +122,14 @@ function CartPage() {
                 qrName: formattedQR,
                 restaurant: adminSettings?.restaurant
             }),
-        });
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log("📬 Notification response:", data);
+            })
+            .catch(err => {
+                console.error("❌ Fetch failed:", err);
+            });
 
         setTimeout(() => {
             navigate('');
@@ -139,7 +164,7 @@ function CartPage() {
         }
 
         if (paymentMethod === 'Cash on Delivery') {
-            saveOrder('In Cash');
+            saveOrder('Cash on Delivery');
         }
     };        
 

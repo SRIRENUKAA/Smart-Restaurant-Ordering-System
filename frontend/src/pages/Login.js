@@ -50,6 +50,7 @@ function Login() {
                 // Save token and userId *per user* in localStorage
                 localStorage.setItem('activeUser', email);
                 localStorage.setItem('userId', data.userId);
+                localStorage.setItem('token', data.token);
                 
                 setLoading(false);
                 navigate('/dashboard'); // ✅ redirect
