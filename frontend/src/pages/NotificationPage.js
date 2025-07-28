@@ -30,12 +30,11 @@ function NotificationPage() {
             const res = await axios.delete(`${BASE_URL}/api/notifications/${id}`);
             console.log("✅ Deleted:", res.data);
 
-            // Update state to remove the deleted notification from UI
             setNotifications(prev => prev.filter(notif => notif._id !== id));
         } catch (error) {
             console.error("❌ Delete error:", error);
         }
-    };          
+    };
 
     const handleTouchStart = (e) => {
         touchStartX.current = e.touches[0].clientX;
@@ -72,53 +71,53 @@ function NotificationPage() {
             {notifications.length === 0 ? (
                 <p style={styles.noText}>No notifications yet.</p>
             ) : (
-                    <ul style={styles.ul}>
-                        {notifications.map((notif) => {
-                            const isOrder = notif.message.includes("New Order from QR");
-                            return (
-                                <li
-                                    key={notif._id}
-                                    className="notification-item"
-                                    style={{
-                                        ...styles.notificationItem,
-                                        ...(swipedId === notif._id ? styles.swiped : {}),
-                                        cursor: isOrder ? 'pointer' : 'default',
-                                    }}
-                                    onClick={() => {
-                                        if (isOrder) {
-                                            const qr = extractQR(notif.message);
-                                            const rest = extractRestaurant(notif.message);
-                                            navigate(`/orders?qrName=${qr}&restaurant=${rest}&notif=${notif._id}`);
-                                        }
-                                    }}
-                                    onTouchStart={handleTouchStart}
-                                    onTouchMove={handleTouchMove}
-                                    onTouchEnd={() => handleTouchEnd(notif._id)}
-                                >
-                                    <div style={styles.text}>
-                                        <div>
-                                            <strong>{notif.message}</strong><br />
-                                            <small>{new Date(notif.time).toLocaleString()}</small>
-                                        </div>
+                <ul style={styles.ul}>
+                    {notifications.map((notif) => {
+                        const isOrder = notif.message.includes("New Order from QR");
+                        return (
+                            <li
+                                key={notif._id}
+                                className="notification-item"
+                                style={{
+                                    ...styles.notificationItem,
+                                    ...(swipedId === notif._id ? styles.swiped : {}),
+                                    cursor: isOrder ? 'pointer' : 'default',
+                                }}
+                                onClick={() => {
+                                    if (isOrder) {
+                                        const qr = extractQR(notif.message);
+                                        const rest = extractRestaurant(notif.message);
+                                        navigate(`/orders?qrName=${qr}&restaurant=${rest}&notif=${notif._id}`);
+                                    }
+                                }}
+                                onTouchStart={handleTouchStart}
+                                onTouchMove={handleTouchMove}
+                                onTouchEnd={() => handleTouchEnd(notif._id)}
+                            >
+                                <div style={styles.text}>
+                                    <div>
+                                        <strong>{notif.message}</strong><br />
+                                        <small>{new Date(notif.time).toLocaleString()}</small>
                                     </div>
+                                </div>
 
-                                    <button
-                                        className="delete-btn"
-                                        onClick={(e) => {
-                                            e.stopPropagation(); // Prevent redirect when clicking delete
-                                            handleDelete(notif._id);
-                                        }}
-                                        style={{
-                                            ...styles.deleteBtn,
-                                            display: swipedId === notif._id ? 'inline-block' : 'none'
-                                        }}
-                                    >
-                                        🗑️
-                                    </button>
-                                </li>
-                            );
-                        })}
-                    </ul>
+                                <button
+                                    className="delete-btn"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDelete(notif._id);
+                                    }}
+                                    style={{
+                                        ...styles.deleteBtn,
+                                        display: swipedId === notif._id ? 'inline-block' : 'none'
+                                    }}
+                                >
+                                    🗑️
+                                </button>
+                            </li>
+                        );
+                    })}
+                </ul>
             )}
 
             <button style={styles.backBtn} onClick={() => window.history.back()}>
