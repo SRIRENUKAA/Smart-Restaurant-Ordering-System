@@ -68,7 +68,6 @@ Made with ❤️ by [**SRIRENUKAA**](https://github.com/SRIRENUKAA)
 ## 🚀 Project Status
 
 - ✅ Fully Functional MVP  
-- 🧪 Continuously Improving  
-- 📲 Mobile version (React Native) planned
+- 🧪 Continuously Improving
 
 ---
