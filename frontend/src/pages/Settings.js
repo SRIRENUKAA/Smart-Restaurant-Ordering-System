@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
+    const navigate = useNavigate();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
@@ -34,6 +36,28 @@ const Settings = () => {
         if (savedSettings.ifsc) setIfsc(savedSettings.ifsc);
         if (savedSettings.bankName) setBankName(savedSettings.bankName);
     }, []);
+
+    const handleLogout = () => {
+        // Clear all user data from localStorage
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+            localStorage.removeItem(`smartserve_settings_${userId}`);
+        }
+        localStorage.removeItem('userId');
+        localStorage.removeItem('menuID');
+        localStorage.removeItem('savedQRCodes');
+        localStorage.removeItem('smartserve_settings');
+        localStorage.removeItem('token'); // Clear the token that App.js checks for
+        
+        // Clear any other authentication related data
+        localStorage.clear(); // This will clear everything if needed
+        
+        // Redirect to login page
+        navigate('/login');
+        
+        // Force page reload to ensure App.js re-evaluates the token
+        window.location.reload();
+    };
 
     const handleSave = async () => {
         const settings = {
@@ -130,7 +154,12 @@ const Settings = () => {
 
     return (
         <div style={styles.container}>
-            <h2 style={styles.title}>⚙️ Settings</h2>
+            <div style={styles.header}>
+                <h2 style={styles.title}>⚙️ Settings</h2>
+                <button style={styles.logoutButton} onClick={handleLogout}>
+                    🚪 Logout
+                </button>
+            </div>
 
             {/* Profile Section */}
             <div style={styles.section}>
@@ -324,11 +353,27 @@ const styles = {
         borderRadius: '12px',
         boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
     },
+    header: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '20px',
+    },
     title: {
         fontSize: '2rem',
-        textAlign: 'center',
         color: '#2c3e50',
-        marginBottom: '20px',
+        margin: 0,
+    },
+    logoutButton: {
+        padding: '8px 16px',
+        borderRadius: '8px',
+        border: 'none',
+        backgroundColor: '#e67e22',
+        color: 'white',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        fontSize: '14px',
+        transition: 'background-color 0.3s',
     },
     section: {
         marginBottom: '25px',
