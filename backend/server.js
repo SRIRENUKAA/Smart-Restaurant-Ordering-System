@@ -580,28 +580,30 @@ app.post('/api/login', async (req, res) => {
     console.log("Login attempt with email:", email);
 
     try {
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Email and password required' });
+        }
+
         const user = await User.findOne({ email });
         if (!user) {
-            console.log("User not found");
+            console.log("User not found:", email);
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            console.log("Password does not match");
+            console.log("Password mismatch for:", email);
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        console.log("Login successful");
-
+        console.log("Login successful for:", email);
         res.json({ message: 'Login successful', userId: user._id, email: user.email });
     } catch (err) {
-        console.error("Server error:", err);
+        console.error("🔥 Server error in /api/login:", err);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
-// POST: forgot password
 // POST: forgot password
 app.post('/api/forgot-password', async (req, res) => {
     const { email } = req.body;
